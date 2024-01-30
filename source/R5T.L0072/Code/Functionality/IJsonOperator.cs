@@ -34,5 +34,19 @@ namespace R5T.L0072
             var output = await JsonSerializer.DeserializeAsync<T>(fileStream);
             return output;
         }
+
+        public T Load_FromFile_Synchronous<T>(
+            string jsonFilePath,
+            string objectKey)
+        {
+            var jsonText = Instances.FileOperator.Read_Text_Synchronous(jsonFilePath);
+
+            var rootElement = JsonSerializer.Deserialize<JsonElement>(jsonText);
+
+            var keyedElement = rootElement.GetProperty(objectKey);
+
+            var output = keyedElement.Deserialize<T>();
+            return output;
+        }
     }
 }
