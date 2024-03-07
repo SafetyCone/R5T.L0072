@@ -6,6 +6,11 @@ namespace R5T.L0072
     public static partial class Links
     {
         /// <summary>
+        /// <see href="https://learn.microsoft.com/en-us/dotnet/api/system.text.json?view=net-8.0"/>
+        /// </summary>
+        public static readonly object ForSystemTextJson;
+
+        /// <summary>
         /// <see href="https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/"/>
         /// </summary>
         public static readonly object ForSystemTextJsonAnnouncement;
