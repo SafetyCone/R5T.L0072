@@ -19,6 +19,12 @@ namespace R5T.L0072
     [FunctionalityMarker]
     public partial interface IJsonOperator : IFunctionalityMarker
     {
+        public T Load_FromString<T>(string jsonString)
+        {
+            var output = JsonSerializer.Deserialize<T>(jsonString);
+            return output;
+        }
+
         public T Load_FromFile_Synchronous<T>(string jsonFilePath)
         {
             var jsonText = Instances.FileOperator.Read_Text_Synchronous(jsonFilePath);
@@ -60,6 +66,51 @@ namespace R5T.L0072
             var keyedElement = rootElement.GetProperty(objectKey);
 
             var output = keyedElement.Deserialize<T>();
+            return output;
+        }
+
+        public void Save_ToFile_Synchronous<T>(
+            string jsonFilePath,
+            T value)
+        {
+            using var fileStream = Instances.FileStreamOperator.Open_Write(
+                jsonFilePath);
+
+            JsonSerializer.Serialize(
+                fileStream,
+                value);
+        }
+
+        public async Task Save_ToFile<T>(
+            string jsonFilePath,
+            T value)
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+
+            // "await using" because file steam is IAsyncDisposable.
+            await using var fileStream = Instances.FileStreamOperator.Open_Write(
+                jsonFilePath);
+
+            await JsonSerializer.SerializeAsync(
+                fileStream,
+                value,
+                options);
+        }
+
+        public string Save_ToString<T>(T value)
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+
+            var output = JsonSerializer.Serialize(
+                value,
+                options);
+
             return output;
         }
     }
