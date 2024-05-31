@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -19,6 +20,60 @@ namespace R5T.L0072
     [FunctionalityMarker]
     public partial interface IJsonOperator : IFunctionalityMarker
     {
+        public async Task<JsonDocument> Deserialize_AsJsonDocument(string jsonFilePath)
+        {
+            using var fileStream = Instances.FileStreamOperator.Open_Read(
+                jsonFilePath);
+
+            var output = await JsonDocument.ParseAsync(fileStream);
+            return output;
+        }
+
+        public async Task<JsonElement> Deserialize_AsJsonElement(string jsonFilePath)
+        {
+            using var document = await this.Deserialize_AsJsonDocument(jsonFilePath);
+
+            // Always return a clone of the element you want, since the JsonDocument is disposable.
+            var output = document.RootElement.Clone();
+            return output;
+        }
+
+        public JsonSerializerOptions Get_Options_Standard()
+        {
+            var output = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+
+            return output;
+        }
+
+        public Task Serialize(
+            string jsonFilePath,
+            JsonElement element)
+        {
+            var options = this.Get_Options_Standard();
+
+            return this.Serialize(
+                jsonFilePath,
+                element,
+                options);
+        }
+
+        public async Task Serialize(
+            string jsonFilePath,
+            JsonElement element,
+            JsonSerializerOptions options)
+        {
+            using var fileStream = Instances.FileStreamOperator.Open_Write(
+                jsonFilePath);
+
+            await JsonSerializer.SerializeAsync(
+                fileStream,
+                element,
+                options);
+        }
+
         public T Load_FromString<T>(string jsonString)
         {
             var output = JsonSerializer.Deserialize<T>(jsonString);
@@ -40,6 +95,18 @@ namespace R5T.L0072
             var output = await JsonSerializer.DeserializeAsync<T>(fileStream);
             return output;
         }
+
+        //public async Task<T> Load_FromFile<T>(
+        //    string jsonFilePath,
+        //    string key)
+        //{
+        //    var rootElement = await this.Deserialize_AsJsonElement(jsonFilePath);
+
+        //    var element = rootElement.GetProperty(key);
+
+        //    var output = element.Deserialize<T>();
+        //    return output;
+        //}
 
         public async Task<T> Load_FromFile<T>(
             string jsonFilePath,
