@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 using R5T.T0132;
@@ -74,12 +77,6 @@ namespace R5T.L0072
                 options);
         }
 
-        public T Load_FromString<T>(string jsonString)
-        {
-            var output = JsonSerializer.Deserialize<T>(jsonString);
-            return output;
-        }
-
         public T Load_FromFile_Synchronous<T>(string jsonFilePath)
         {
             var jsonText = Instances.FileOperator.Read_Text_Synchronous(jsonFilePath);
@@ -135,6 +132,21 @@ namespace R5T.L0072
             var output = keyedElement.Deserialize<T>();
             return output;
         }
+
+        public T Load_FromString<T>(string jsonString)
+        {
+            var output = JsonSerializer.Deserialize<T>(jsonString);
+            return output;
+        }
+
+        public JsonArray New_Array(IEnumerable<JsonNode> nodes)
+            => this.New_Array(nodes.ToArray());
+
+        public JsonArray New_Array(params JsonNode[] nodes)
+            => new(nodes);
+
+        public JsonObject New_Object()
+            => new();
 
         public void Save_ToFile_Synchronous<T>(
             string jsonFilePath,
