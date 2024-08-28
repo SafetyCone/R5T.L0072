@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -23,12 +22,42 @@ namespace R5T.L0072
     [FunctionalityMarker]
     public partial interface IJsonOperator : IFunctionalityMarker
     {
+        public T Deserialize_FromText<T>(string jsonText)
+        {
+            var output = JsonSerializer.Deserialize<T>(jsonText);
+            return output;
+        }
+
+        public JsonObject Parse_Object_FromJsonText(string jsonText)
+        {
+            var output = JsonObject.Parse(jsonText).AsObject();
+            return output;
+        }
+
+        public T Parse_FromJsonText<T>(
+            string jsonText,
+            string keyName)
+        {
+            var jsonObject = this.Parse_Object_FromJsonText(jsonText);
+
+            var jsonNode = jsonObject[keyName];
+
+            var output = jsonNode.GetValue<T>();
+            return output;
+        }
+
         public async Task<JsonDocument> Deserialize_AsJsonDocument(string jsonFilePath)
         {
             using var fileStream = Instances.FileStreamOperator.Open_Read(
                 jsonFilePath);
 
             var output = await JsonDocument.ParseAsync(fileStream);
+            return output;
+        }
+
+        public JsonDocument Deserialize_Text_AsJsonDocument(string jsonText)
+        {
+            var output = JsonDocument.Parse(jsonText);
             return output;
         }
 
@@ -41,12 +70,55 @@ namespace R5T.L0072
             return output;
         }
 
+        public JsonElement Deserialize_Text_AsJsonElement(string jsonText)
+        {
+            using var document = this.Deserialize_Text_AsJsonDocument(jsonText);
+
+            // Always return a clone of the element you want, since the JsonDocument is disposable.
+            var output = document.RootElement.Clone();
+            return output;
+        }
+
         public JsonSerializerOptions Get_Options_Standard()
         {
             var output = new JsonSerializerOptions
             {
                 WriteIndented = true,
             };
+
+            return output;
+        }
+
+        public Task Serialize_ToFile<T>(
+            string jsonFilePath,
+            T value)
+            => this.Save_ToFile(
+                jsonFilePath,
+                value);
+
+        public string Serialize_ToText<T>(
+            T value,
+            JsonSerializerOptions options)
+        {
+            var jsonText = Instances.StringOperator.Serialize_UsingMemoryStream(
+                memoryStream =>
+                {
+                    JsonSerializer.SerializeAsync(
+                        memoryStream,
+                        value,
+                        options);
+                });
+
+            return jsonText;
+        }
+
+        public string Serialize_ToText<T>(T value)
+        {
+            var options = this.Get_Options_Standard();
+
+            var output = this.Serialize_ToText(
+                value,
+                options);
 
             return output;
         }
@@ -77,6 +149,79 @@ namespace R5T.L0072
                 options);
         }
 
+        public Task Serialize(
+            string jsonFilePath,
+            JsonObject jsonObject)
+        {
+            var options = this.Get_Options_Standard();
+
+            return this.Serialize(
+                jsonFilePath,
+                jsonObject,
+                options);
+        }
+
+        public async Task Serialize(
+            string jsonFilePath,
+            JsonObject jsonObject,
+            JsonSerializerOptions options)
+        {
+            using var fileStream = Instances.FileStreamOperator.Open_Write(
+                jsonFilePath);
+
+            await JsonSerializer.SerializeAsync(
+                fileStream,
+                jsonObject,
+                options);
+        }
+
+        public async Task<Dictionary<TKey, TValue>> Load_FromFile_ByKey<TKey, TValue>(
+            string jsonFilePath,
+            Func<TValue, TKey> keySelector)
+        {
+            try
+            {
+                var values = await this.Load_FromFile<TValue[]>(
+                    jsonFilePath);
+
+                var output = values
+                    .ToDictionary(keySelector);
+
+                return output;
+            }
+            catch (Exception exception)
+            {
+                throw this.Get_Exception_LoadFromFileFailed<TValue>(
+                    jsonFilePath,
+                    exception);
+            }
+        }
+
+        public async Task<Dictionary<TKey, TValue[]>> Load_FromFile_GroupedByKey<TKey, TValue>(
+            string jsonFilePath,
+            Func<TValue, TKey> keySelector)
+        {
+            try
+            {
+                var values = await this.Load_FromFile<TValue[]>(
+                    jsonFilePath);
+
+                var output = values
+                    .GroupBy(keySelector)
+                    .ToDictionary(
+                        group => group.Key,
+                        group => group.ToArray());
+
+                return output;
+            }
+            catch (Exception exception)
+            {
+                throw this.Get_Exception_LoadFromFileFailed<TValue[]>(
+                    jsonFilePath,
+                    exception);
+            }
+        }
+
         public T Load_FromFile_Synchronous<T>(string jsonFilePath)
         {
             var jsonText = Instances.FileOperator.Read_Text_Synchronous(jsonFilePath);
@@ -90,6 +235,32 @@ namespace R5T.L0072
             using var fileStream = Instances.FileStreamOperator.Open_Read(jsonFilePath);
 
             var output = await JsonSerializer.DeserializeAsync<T>(fileStream);
+            return output;
+        }
+
+        public string Get_ExceptionMessage_LoadFromFileFailed<T>(string jsonFilePath)
+        {
+            var typeName = Instances.TypeNameOperator.Get_TypeNameOf<T>();
+
+            var output = $"Failed to load type '{typeName}' from:\n{jsonFilePath}";
+            return output;
+        }
+
+        public Exception Get_Exception_LoadFromFileFailed<T>(string jsonFilePath)
+        {
+            var message = this.Get_ExceptionMessage_LoadFromFileFailed<T>(jsonFilePath);
+
+            var output = new Exception(message);
+            return output;
+        }
+
+        public Exception Get_Exception_LoadFromFileFailed<T>(
+            string jsonFilePath,
+            Exception innerException)
+        {
+            var message = this.Get_ExceptionMessage_LoadFromFileFailed<T>(jsonFilePath);
+
+            var output = new Exception(message);
             return output;
         }
 
@@ -133,11 +304,11 @@ namespace R5T.L0072
             return output;
         }
 
+        /// <summary>
+        /// Quality-of-life overload for <see cref="Deserialize_FromText{T}(string)"/>
+        /// </summary>
         public T Load_FromString<T>(string jsonString)
-        {
-            var output = JsonSerializer.Deserialize<T>(jsonString);
-            return output;
-        }
+            => this.Deserialize_FromText<T>(jsonString);
 
         public JsonArray New_Array(IEnumerable<JsonNode> nodes)
             => this.New_Array(nodes.ToArray());
@@ -162,6 +333,21 @@ namespace R5T.L0072
 
         public async Task Save_ToFile<T>(
             string jsonFilePath,
+            T value,
+            JsonSerializerOptions options)
+        {
+            // "await using" because file steam is IAsyncDisposable.
+            await using var fileStream = Instances.FileStreamOperator.Open_Write(
+                jsonFilePath);
+
+            await JsonSerializer.SerializeAsync(
+                fileStream,
+                value,
+                options);
+        }
+
+        public Task Save_ToFile<T>(
+            string jsonFilePath,
             T value)
         {
             var options = new JsonSerializerOptions
@@ -169,12 +355,8 @@ namespace R5T.L0072
                 WriteIndented = true,
             };
 
-            // "await using" because file steam is IAsyncDisposable.
-            await using var fileStream = Instances.FileStreamOperator.Open_Write(
-                jsonFilePath);
-
-            await JsonSerializer.SerializeAsync(
-                fileStream,
+            return this.Save_ToFile<T>(
+                jsonFilePath,
                 value,
                 options);
         }

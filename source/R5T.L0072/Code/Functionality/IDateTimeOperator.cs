@@ -6,7 +6,8 @@ using R5T.T0132;
 namespace R5T.L0072
 {
     [FunctionalityMarker]
-    public partial interface IDateTimeOperator : IFunctionalityMarker
+    public partial interface IDateTimeOperator : IFunctionalityMarker,
+        L0066.IDateTimeOperator
     {
         public DateTime From_DateAndTime(DateOnly dateOnly, TimeOnly timeOnly)
         {
