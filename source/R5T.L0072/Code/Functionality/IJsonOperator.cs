@@ -96,6 +96,25 @@ namespace R5T.L0072
                 jsonFilePath,
                 value);
 
+        public string Serialize_ToText(
+            JsonObject jsonObject,
+            JsonSerializerOptions options)
+            // Just reuse the generic logic.
+            => this.Serialize_ToText<JsonObject>(
+                jsonObject,
+                options);
+
+        public string Serialize_ToText(JsonObject jsonObject)
+        {
+            var options = this.Get_Options_Standard();
+
+            var output = this.Serialize_ToText(
+                jsonObject,
+                options);
+
+            return output;
+        }
+
         public string Serialize_ToText<T>(
             T value,
             JsonSerializerOptions options)
@@ -103,7 +122,7 @@ namespace R5T.L0072
             var jsonText = Instances.StringOperator.Serialize_UsingMemoryStream(
                 memoryStream =>
                 {
-                    JsonSerializer.SerializeAsync(
+                    JsonSerializer.Serialize(
                         memoryStream,
                         value,
                         options);
