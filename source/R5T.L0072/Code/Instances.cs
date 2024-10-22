@@ -12,6 +12,7 @@ namespace R5T.L0072
         public static L0066.IDefaultOperator DefaultOperator => L0066.DefaultOperator.Instance;
         public static L0066.IFileOperator FileOperator => L0066.FileOperator.Instance;
         public static L0066.IFileStreamOperator FileStreamOperator => L0066.FileStreamOperator.Instance;
+        public static IJsonElementOperator JsonElementOperator => L0072.JsonElementOperator.Instance;
         public static L0066.IStringOperator StringOperator => L0066.StringOperator.Instance;
         public static ITimeOnlyOperator TimeOnlyOperator => L0072.TimeOnlyOperator.Instance;
         public static L0066.ITypeNameOperator TypeNameOperator => L0066.TypeNameOperator.Instance;

@@ -65,6 +65,18 @@ namespace R5T.L0072
             return firstChild_OrDefault;
         }
 
+        public string Get_Value_AsString(JsonElement jElement)
+        {
+            var output = jElement.GetString();
+            return output;
+        }
+
+        /// <summary>
+        /// Chooses <see cref="Get_Value_AsString(JsonElement)"/> as the default.
+        /// </summary>
+        public string Get_Value(JsonElement jElement)
+            => this.Get_Value_AsString(jElement);
+
         public bool Has_FirstChildElement(
             JsonElement element,
             out JsonElement firstChild_OrDefault)

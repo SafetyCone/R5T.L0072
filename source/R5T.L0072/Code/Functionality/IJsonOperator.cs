@@ -89,6 +89,40 @@ namespace R5T.L0072
             return output;
         }
 
+        public string Get_PropertyValue(
+            JsonElement jElement,
+            string propertyName)
+        {
+            var propertyJElement = jElement.GetProperty(propertyName);
+
+            var output = propertyJElement.GetString();
+            return output;
+        }
+
+        public string Get_Value_ByKeyPathParts(
+            JsonElement jElement,
+            params string[] keyPathParts)
+        {
+            var currentJElement = jElement;
+
+            foreach (string keyPathPart in keyPathParts)
+            {
+                if (currentJElement.TryGetProperty(
+                    keyPathPart,
+                    out JsonElement nextJElement))
+                {
+                    currentJElement = nextJElement;
+                }
+                else
+                {
+                    throw new Exception($"Key not found: '{keyPathPart}'");
+                }
+            }
+
+            var output = Instances.JsonElementOperator.Get_Value(currentJElement);
+            return output;
+        }
+
         public Task Serialize_ToFile<T>(
             string jsonFilePath,
             T value)
