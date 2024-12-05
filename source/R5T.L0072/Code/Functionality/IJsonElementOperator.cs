@@ -11,6 +11,9 @@ namespace R5T.L0072
     [FunctionalityMarker]
     public partial interface IJsonElementOperator : IFunctionalityMarker
     {
+        public T Deserialize<T>(JsonElement jsonElement)
+            => jsonElement.Deserialize<T>();
+
         public IEnumerable<JsonElement> Enumerate_ChildAraryElements(JsonElement element)
             => element.EnumerateArray();
 
@@ -87,5 +90,17 @@ namespace R5T.L0072
             var output = Instances.DefaultOperator.Is_NotDefault(firstChild_OrDefault);
             return output;
         }
+
+        public JsonElement Serialize_AsConcreteType<T>(T value)
+            => JsonSerializer.SerializeToElement(value, value.GetType());
+
+        public JsonElement Serialize_AsDeclaredType<T>(T value)
+            => JsonSerializer.SerializeToElement(value);
+
+        /// <summary>
+        /// Chooses <see cref="Serialize_AsConcreteType{T}(T)"/> as the default.
+        /// </summary>
+        public JsonElement Serialize<T>(T value)
+            => this.Serialize_AsConcreteType(value);
     }
 }

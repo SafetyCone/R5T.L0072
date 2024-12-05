@@ -123,6 +123,13 @@ namespace R5T.L0072
             return output;
         }
 
+        public Task Serialize<T>(
+            string jsonFilePath,
+            T value)
+            => this.Serialize_ToFile<T>(
+                jsonFilePath,
+                value);
+
         public Task Serialize_ToFile<T>(
             string jsonFilePath,
             T value)
