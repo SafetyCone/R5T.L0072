@@ -298,6 +298,20 @@ namespace R5T.L0072
             return output;
         }
 
+        public async Task<T> Load_FromFile_OrDefault_New<T>(
+            string jsonFilePath)
+            where T : new()
+        {
+            var fileExists = Instances.FileSystemOperator.Exists_File(jsonFilePath);
+            if(!fileExists)
+            {
+                return new();
+            }
+
+            var output = await this.Load_FromFile<T>(jsonFilePath);
+            return output;
+        }
+
         public string Get_ExceptionMessage_LoadFromFileFailed<T>(string jsonFilePath)
         {
             var typeName = Instances.TypeNameOperator.Get_TypeNameOf<T>();
