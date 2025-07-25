@@ -57,7 +57,7 @@ namespace R5T.L0072
 
         public DateOnly[] Get_Range_Inclusive(DateOnly start, DateOnly end)
             => this.Enumerate_Range_Inclusive(start, end)
-                .Now();
+                .ToArray();
 
         public DateOnly[] Get_DaysOfYear(int year)
         {

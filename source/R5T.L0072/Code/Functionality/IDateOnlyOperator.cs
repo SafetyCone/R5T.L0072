@@ -14,6 +14,15 @@ namespace R5T.L0072
         public DateOnly Add_Day(DateOnly date)
             => this.Add_Days(date, 1);
 
+        public DateOnly Add_Years(DateOnly date, int years)
+            => date.AddYears(years);
+
+        public DateOnly Add_Year(DateOnly date)
+            => this.Add_Years(date, 1);
+
+        public DateOnly Subtract_Year(DateOnly date)
+            => this.Add_Years(date, -1);
+
         public string Format(
             DateOnly date,
             string formatTemplate)

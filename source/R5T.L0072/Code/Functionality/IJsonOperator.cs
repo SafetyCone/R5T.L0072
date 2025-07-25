@@ -11,7 +11,7 @@ using R5T.T0132;
 namespace R5T.L0072
 {
     /// <summary>
-    /// JSON operator built around System.Text.Json functionality.
+    /// .NET 6.0 strictly-framework library JSON operator built around System.Text.Json functionality.
     /// </summary>
     /// <remarks>
     /// JSON functionality in .NET was previously through the Json.NET third-party library.
@@ -45,6 +45,12 @@ namespace R5T.L0072
             var output = jsonNode.GetValue<T>();
             return output;
         }
+
+        /// <summary>
+        /// Quality-of-life overload for <see cref="Parse_Object_FromJsonText(string)"/>.
+        /// </summary>
+        public JsonObject Parse_FromJsonText(string jsonText)
+            => this.Parse_Object_FromJsonText(jsonText);
 
         public async Task<JsonDocument> Deserialize_AsJsonDocument(string jsonFilePath)
         {
