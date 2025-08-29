@@ -52,6 +52,50 @@ namespace R5T.L0072
         public JsonObject Parse_FromJsonText(string jsonText)
             => this.Parse_Object_FromJsonText(jsonText);
 
+        public JsonNode Parse_AsNode(string jsonText)
+        {
+            var output = JsonObject.Parse(jsonText);
+            return output;
+        }
+
+        public JsonArray Parse_AsArray(string jsonText)
+        {
+            var node = this.Parse_AsNode(jsonText);
+
+            var output = node.AsArray();
+            return output;
+        }
+
+        public JsonDocument Parse_AsDocument(string jsonText)
+        {
+            var output = JsonDocument.Parse(jsonText);
+            return output;
+        }
+
+        public JsonElement Parse_AsElement(string jsonText)
+        {
+            var document = this.Parse_AsDocument(jsonText);
+
+            var output = document.RootElement;
+            return output;
+        }
+
+        public JsonObject Parse_AsObject(string jsonText)
+        {
+            var node = this.Parse_AsNode(jsonText);
+
+            var output = node.AsObject();
+            return output;
+        }
+
+        public JsonValue Parse_AsValue(string jsonText)
+        {
+            var node = this.Parse_AsNode(jsonText);
+
+            var output = node.AsValue();
+            return output;
+        }
+
         public async Task<JsonDocument> Deserialize_AsJsonDocument(string jsonFilePath)
         {
             using var fileStream = Instances.FileStreamOperator.Open_Read(
