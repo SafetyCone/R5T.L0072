@@ -5,6 +5,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
+using F10Y.T0011;
+
 using R5T.T0132;
 
 
@@ -20,13 +22,12 @@ namespace R5T.L0072
     /// JSON functionality in .NET has been brought into the framework.
     /// </remarks>
     [FunctionalityMarker]
-    public partial interface IJsonOperator : IFunctionalityMarker
+    public partial interface IJsonOperator : IFunctionalityMarker,
+        F10Y.L0060.IJsonOperator
     {
-        public T Deserialize_FromText<T>(string jsonText)
-        {
-            var output = JsonSerializer.Deserialize<T>(jsonText);
-            return output;
-        }
+        [Ignore]
+        F10Y.L0060.IJsonOperator _F10Y_L0060 => F10Y.L0060.JsonOperator.Instance;
+
 
         public JsonObject Parse_Object_FromJsonText(string jsonText)
         {
@@ -51,50 +52,6 @@ namespace R5T.L0072
         /// </summary>
         public JsonObject Parse_FromJsonText(string jsonText)
             => this.Parse_Object_FromJsonText(jsonText);
-
-        public JsonNode Parse_AsNode(string jsonText)
-        {
-            var output = JsonObject.Parse(jsonText);
-            return output;
-        }
-
-        public JsonArray Parse_AsArray(string jsonText)
-        {
-            var node = this.Parse_AsNode(jsonText);
-
-            var output = node.AsArray();
-            return output;
-        }
-
-        public JsonDocument Parse_AsDocument(string jsonText)
-        {
-            var output = JsonDocument.Parse(jsonText);
-            return output;
-        }
-
-        public JsonElement Parse_AsElement(string jsonText)
-        {
-            var document = this.Parse_AsDocument(jsonText);
-
-            var output = document.RootElement;
-            return output;
-        }
-
-        public JsonObject Parse_AsObject(string jsonText)
-        {
-            var node = this.Parse_AsNode(jsonText);
-
-            var output = node.AsObject();
-            return output;
-        }
-
-        public JsonValue Parse_AsValue(string jsonText)
-        {
-            var node = this.Parse_AsNode(jsonText);
-
-            var output = node.AsValue();
-            return output;
-        }
 
         public async Task<JsonDocument> Deserialize_AsJsonDocument(string jsonFilePath)
         {
@@ -126,16 +83,6 @@ namespace R5T.L0072
 
             // Always return a clone of the element you want, since the JsonDocument is disposable.
             var output = document.RootElement.Clone();
-            return output;
-        }
-
-        public JsonSerializerOptions Get_Options_Standard()
-        {
-            var output = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-
             return output;
         }
 
@@ -173,65 +120,12 @@ namespace R5T.L0072
             return output;
         }
 
-        public Task Serialize<T>(
-            string jsonFilePath,
-            T value)
-            => this.Serialize_ToFile<T>(
-                jsonFilePath,
-                value);
-
-        public Task Serialize_ToFile<T>(
+        public new Task Serialize_ToFile<T>(
             string jsonFilePath,
             T value)
             => this.Save_ToFile(
                 jsonFilePath,
                 value);
-
-        public string Serialize_ToText(
-            JsonObject jsonObject,
-            JsonSerializerOptions options)
-            // Just reuse the generic logic.
-            => this.Serialize_ToText<JsonObject>(
-                jsonObject,
-                options);
-
-        public string Serialize_ToText(JsonObject jsonObject)
-        {
-            var options = this.Get_Options_Standard();
-
-            var output = this.Serialize_ToText(
-                jsonObject,
-                options);
-
-            return output;
-        }
-
-        public string Serialize_ToText<T>(
-            T value,
-            JsonSerializerOptions options)
-        {
-            var jsonText = Instances.StringOperator.Serialize_UsingMemoryStream(
-                memoryStream =>
-                {
-                    JsonSerializer.Serialize(
-                        memoryStream,
-                        value,
-                        options);
-                });
-
-            return jsonText;
-        }
-
-        public string Serialize_ToText<T>(T value)
-        {
-            var options = this.Get_Options_Standard();
-
-            var output = this.Serialize_ToText(
-                value,
-                options);
-
-            return output;
-        }
 
         public Task Serialize(
             string jsonFilePath,
@@ -340,14 +234,6 @@ namespace R5T.L0072
             return output;
         }
 
-        public async Task<T> Load_FromFile<T>(string jsonFilePath)
-        {
-            using var fileStream = Instances.FileStreamOperator.Open_Read(jsonFilePath);
-
-            var output = await JsonSerializer.DeserializeAsync<T>(fileStream);
-            return output;
-        }
-
         public async Task<T> Load_FromFile_OrDefault_New<T>(
             string jsonFilePath)
             where T : new()
@@ -400,20 +286,6 @@ namespace R5T.L0072
         //    return output;
         //}
 
-        public async Task<T> Load_FromFile<T>(
-            string jsonFilePath,
-            string objectKey)
-        {
-            var jsonText = await Instances.FileOperator.Read_Text(jsonFilePath);
-
-            var rootElement = JsonSerializer.Deserialize<JsonElement>(jsonText);
-
-            var keyedElement = rootElement.GetProperty(objectKey);
-
-            var output = keyedElement.Deserialize<T>();
-            return output;
-        }
-
         public T Load_FromFile_Synchronous<T>(
             string jsonFilePath,
             string objectKey)
@@ -429,7 +301,7 @@ namespace R5T.L0072
         }
 
         /// <summary>
-        /// Quality-of-life overload for <see cref="Deserialize_FromText{T}(string)"/>
+        /// Quality-of-life overload for <see cref="F10Y.L0060.IJsonOperator.Deserialize_FromText{T}(string)"/>
         /// </summary>
         public T Load_FromString<T>(string jsonString)
             => this.Deserialize_FromText<T>(jsonString);
