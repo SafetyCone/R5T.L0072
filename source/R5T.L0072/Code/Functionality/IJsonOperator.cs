@@ -25,33 +25,13 @@ namespace R5T.L0072
     public partial interface IJsonOperator : IFunctionalityMarker,
         F10Y.L0060.IJsonOperator
     {
+#pragma warning disable IDE1006 // Naming Styles
+
         [Ignore]
         F10Y.L0060.IJsonOperator _F10Y_L0060 => F10Y.L0060.JsonOperator.Instance;
 
+#pragma warning restore IDE1006 // Naming Styles
 
-        public JsonObject Parse_Object_FromJsonText(string jsonText)
-        {
-            var output = JsonObject.Parse(jsonText).AsObject();
-            return output;
-        }
-
-        public T Parse_FromJsonText<T>(
-            string jsonText,
-            string keyName)
-        {
-            var jsonObject = this.Parse_Object_FromJsonText(jsonText);
-
-            var jsonNode = jsonObject[keyName];
-
-            var output = jsonNode.GetValue<T>();
-            return output;
-        }
-
-        /// <summary>
-        /// Quality-of-life overload for <see cref="Parse_Object_FromJsonText(string)"/>.
-        /// </summary>
-        public JsonObject Parse_FromJsonText(string jsonText)
-            => this.Parse_Object_FromJsonText(jsonText);
 
         public async Task<JsonDocument> Deserialize_AsJsonDocument(string jsonFilePath)
         {
@@ -271,103 +251,6 @@ namespace R5T.L0072
             var message = this.Get_ExceptionMessage_LoadFromFileFailed<T>(jsonFilePath);
 
             var output = new Exception(message);
-            return output;
-        }
-
-        //public async Task<T> Load_FromFile<T>(
-        //    string jsonFilePath,
-        //    string key)
-        //{
-        //    var rootElement = await this.Deserialize_AsJsonElement(jsonFilePath);
-
-        //    var element = rootElement.GetProperty(key);
-
-        //    var output = element.Deserialize<T>();
-        //    return output;
-        //}
-
-        public T Load_FromFile_Synchronous<T>(
-            string jsonFilePath,
-            string objectKey)
-        {
-            var jsonText = Instances.FileOperator.Read_Text_Synchronous(jsonFilePath);
-
-            var rootElement = JsonSerializer.Deserialize<JsonElement>(jsonText);
-
-            var keyedElement = rootElement.GetProperty(objectKey);
-
-            var output = keyedElement.Deserialize<T>();
-            return output;
-        }
-
-        /// <summary>
-        /// Quality-of-life overload for <see cref="F10Y.L0060.IJsonOperator.Deserialize_FromText{T}(string)"/>
-        /// </summary>
-        public T Load_FromString<T>(string jsonString)
-            => this.Deserialize_FromText<T>(jsonString);
-
-        public JsonArray New_Array(IEnumerable<JsonNode> nodes)
-            => this.New_Array(nodes.ToArray());
-
-        public JsonArray New_Array(params JsonNode[] nodes)
-            => new(nodes);
-
-        public JsonObject New_Object()
-            => new();
-
-        public void Save_ToFile_Synchronous<T>(
-            string jsonFilePath,
-            T value)
-        {
-            using var fileStream = Instances.FileStreamOperator.Open_Write(
-                jsonFilePath);
-
-            JsonSerializer.Serialize(
-                fileStream,
-                value);
-        }
-
-        public async Task Save_ToFile<T>(
-            string jsonFilePath,
-            T value,
-            JsonSerializerOptions options)
-        {
-            // "await using" because file steam is IAsyncDisposable.
-            await using var fileStream = Instances.FileStreamOperator.Open_Write(
-                jsonFilePath);
-
-            await JsonSerializer.SerializeAsync(
-                fileStream,
-                value,
-                options);
-        }
-
-        public Task Save_ToFile<T>(
-            string jsonFilePath,
-            T value)
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-
-            return this.Save_ToFile<T>(
-                jsonFilePath,
-                value,
-                options);
-        }
-
-        public string Save_ToString<T>(T value)
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-            };
-
-            var output = JsonSerializer.Serialize(
-                value,
-                options);
-
             return output;
         }
     }
